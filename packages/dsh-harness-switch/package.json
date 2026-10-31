@@ -1,0 +1,35 @@
+{
+  "name": "dsh-harness-switch",
+  "version": "0.2.0",
+  "description": "Harness selection switch UI, aligned with the model selector; reads/writes the shared selection state in the harness-base namespace",
+  "type": "module",
+  "main": "lib/client.js",
+  "exports": {
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json",
+    ".": "./lib/index.js"
+  },
+  "files": [
+    "lib/client.js",
+    "lib/index.js",
+    "cordis.patch.yml"
+  ],
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime"
+      ],
+      "immediately": true
+    },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@deepseek-ai/dsh-client-ui-model-selection": ">=0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-ui-primitives": ">=0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-ui-settings": ">=0.2.1-rc.2"
+  }
+}

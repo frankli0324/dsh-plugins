@@ -1,0 +1,42 @@
+{
+  "name": "dsh-harness-claude",
+  "version": "0.3.1",
+  "description": "DSH harness adapter that drives Claude Code via stream-json; models route through dsh-harness-base",
+  "scripts": {
+    "test": "node test/claude.test.mjs"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/client.js",
+    "lib/bridge.mjs",
+    "cordis.patch.yml"
+  ],
+  "dependencies": {
+    "dsh-harness-base": "0.2.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime"
+      ],
+      "immediately": true
+    }
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@deepseek-ai/dsh-llm": ">=0.2.1-rc.2",
+    "@deepseek-ai/dsh-tools": ">=0.2.1-rc.2",
+    "@deepseek-ai/schemastery": "3.18.5"
+  }
+}

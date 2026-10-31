@@ -1,0 +1,12 @@
+# Claude harness adapter: drives `claude -p --input-format stream-json` per
+# dsh session. A harness, not a model provider — no models advertised; the
+# model comes from the picker's qualified id and routes through the dsh web
+# /v1 relay (ANTHROPIC_BASE_URL). Harness selection state is shared with
+# dsh-harness-codex (its `harness`/`harnessBySession` fields; values "" | "codex"
+# | "claude") and only read here.
+- insert:
+    - id: harness-claude
+      name: 'dsh-harness-claude'
+      config:
+        command: claude
+        permissionMode: bypassPermissions

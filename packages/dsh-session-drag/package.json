@@ -1,0 +1,46 @@
+{
+  "name": "dsh-session-drag",
+  "version": "0.1.0",
+  "description": "DSH plugin: drag sessions across workspaces in the web sidebar; moves history intact by re-homing the session into the target workspace and archiving the original",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/client.js",
+    "cordis.patch.yml"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "sessions",
+        "uiWorkspace"
+      ],
+      "immediately": true
+    }
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0",
+    "dsh": ">=0.2.0 <0.3.0"
+  },
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "workspace",
+    "session",
+    "drag-and-drop",
+    "move"
+  ],
+  "scripts": {
+    "test": "node test/host.smoke.test.mjs && node test/client.smoke.test.mjs"
+  }
+}

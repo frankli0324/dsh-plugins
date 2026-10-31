@@ -1,0 +1,9 @@
+# dsh-harness-base: OpenAI-compatible relay gateway. Registers the llmBase
+# cordis service and the /v1 passthrough route on the dsh web listener.
+# The slice-1 fixed relay target is configured on this entry (`target.baseURL`,
+# `target.api`, `target.apiKeyEnv`, `target.headers`) and stays editable live
+# under the plugin's settings page (ns harness-base).
+- insert:
+    - id: harness-base
+      name: 'dsh-harness-base'
+      config: {}

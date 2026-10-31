@@ -1,0 +1,23 @@
+# Bundle patch for dsh-free-web-search.
+#
+# 注册 DuckDuckGo 搜索提供方（lib/index.js，id: duckduckgo），并把 web 行的
+# searchProvider 从 deepseek-official 固定到它。每次搜索不再消耗一次完整
+# 模型轮次，也不需要任何 API key。
+#
+# 注意两点：
+#  1. patch 对目标行是整行替换而不是深度合并，所以 web 行必须完整复述
+#     fetchProvider（dsh-base 原值 http）。
+#  2. 本 bundle 必须排在 dsh-base 之后（dsh.profile.bundles 列表靠后），
+#     补丁按序合成、同行 id 后写胜出。
+#
+# 卸载方式：从 profile 的 dsh.profile.bundles 移除本包并删除依赖，
+# web.searchProvider 恢复为 deepseek-official。
+
+- insert:
+    - id: web-search-free
+      name: 'dsh-free-web-search'
+
+- id: web
+  config:
+    searchProvider: duckduckgo
+    fetchProvider: http

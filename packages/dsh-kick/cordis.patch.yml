@@ -1,0 +1,17 @@
+# Bundle patch for dsh-kick.
+#
+# 与 steer 平行的「打断发送」：
+#   1. composer 右侧 Kick 按钮（客户端 bundle，lib/client.js）给当前会话设置
+#      一次性标记（30s TTL，/api/kick）。
+#   2. 下一条人工消息用任何原生手势发出（Enter / Cmd+Enter / 发送按钮 /
+#      排队 dock），入箱瞬间服务端打断正在运行的回合，把这条消息改投为
+#      新回合的第一条立即处理 —— 封装为 agent.cancel({keepInbox}) +
+#      inbox.remove + agent.steer，全部公开原语，不改 dsh 核心。
+#   3. 不点 Kick = 原生行为零改动（steer 仍等下一个插入点，queue 仍排队）。
+#
+# 卸载方式：从 profile 的 bundle/插件列表移除本包即可，无残留状态。
+
+- insert:
+    - id: kick
+      name: 'dsh-kick'
+      config: {}

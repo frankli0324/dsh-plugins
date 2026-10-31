@@ -1,0 +1,5 @@
+#!/bin/sh
+# Test stand-in for a plain codex binary: exec the mock app-server verbatim —
+# the adapter's argv carries both --listen unix://<path> and the -c
+# gateway relay provider overrides, exactly like the real binary receives them.
+exec node "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)/../mock-app-server.mjs" "$@"

@@ -1,0 +1,11 @@
+# Bundle patch for dsh-session-drag.
+#
+# 插入主机端插件（HTTP 路由 + 迁移实现）。浏览器半边由 package.json 的
+# dsh.client 声明自动进入 Web 端模块表（ModuleLoader），无需在此登记。
+#
+# 不禁用任何内置行：会话拖动不与现有 sidebar/ui-workspace 冲突，拖放控制器
+# 挂在 document 捕获阶段，原生"同组排序"与"工作区排序"行为保持不变。
+
+- insert:
+    - id: dsh-session-drag
+      name: dsh-session-drag

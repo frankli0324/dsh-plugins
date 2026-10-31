@@ -1,0 +1,41 @@
+{
+  "name": "dsh-rename",
+  "version": "0.1.0",
+  "description": "DSH plugin: re-summarize the whole conversation with a model and rename the session (auto on every prompt + /rename command)",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "cordis.patch.yml"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@deepseek-ai/dsh-commands": "^0.2.1-rc.2",
+    "@deepseek-ai/dsh-llm": "^0.2.1-rc.2",
+    "@deepseek-ai/dsh-session-title": "^0.2.1-rc.2",
+    "@deepseek-ai/dsh-timeout": "^0.2.1-rc.2",
+    "@deepseek-ai/schemastery": "~3.18.4"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "session-title",
+    "rename",
+    "summarize"
+  ],
+  "scripts": {
+    "test": "node test/smoke.test.mjs"
+  }
+}

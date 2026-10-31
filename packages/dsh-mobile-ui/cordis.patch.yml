@@ -1,0 +1,5 @@
+- insert:
+    - id: dsh-mobile-ui
+      name: dsh-mobile-ui
+- id: ui-layout
+  disabled: true

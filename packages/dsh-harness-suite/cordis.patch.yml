@@ -1,0 +1,23 @@
+# Composite harness suite: shared relay and adapters, then switch UI.
+
+- insert:
+    - id: harness-base
+      name: 'dsh-harness-base'
+      config: {}
+
+    - id: harness-codex
+      name: 'dsh-harness-codex'
+      config:
+        command: codex
+        sandbox: danger-full-access
+        approvalPolicy: never
+
+    - id: harness-claude
+      name: 'dsh-harness-claude'
+      config:
+        command: claude
+        permissionMode: bypassPermissions
+
+    - id: harness-switch
+      name: 'dsh-harness-switch'
+      config: {}

@@ -1,0 +1,33 @@
+{
+  "name": "dsh-harness-base",
+  "version": "0.2.0",
+  "description": "DSH model-plane base: /v1 relay + harness registerHarness injection point + selection state",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.5",
+    "@deepseek-ai/dsh-credentials": ">=0.2.1-rc.2",
+    "@deepseek-ai/dsh-host-webserver": ">=0.2.1-rc.2",
+    "@deepseek-ai/dsh-llm": ">=0.2.1-rc.2",
+    "@deepseek-ai/dsh-system-prompt": ">=0.2.1-rc.2",
+    "@deepseek-ai/schemastery": "~3.18.5"
+  },
+  "scripts": {
+    "test": "node test/smoke.test.mjs"
+  }
+}

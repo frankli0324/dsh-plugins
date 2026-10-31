@@ -1,0 +1,44 @@
+# Bundle patch for dsh-rename.
+#
+# 本 bundle 用“整段对话重新总结”的模型标题 provider 替换内置的
+# session-title-first-prompt-llm（dsh-base 只看第一条用户消息）。
+#
+# 注意两点：
+#  1. 会话标题服务全局只允许一个 provider，因此这里必须禁用内置行
+#     `session-title-llm`，否则两个插件必有一个在启动时报
+#     "session-title provider ... is already registered"。
+#  2. 本 bundle 必须排在 dsh-base 之后（dsh.profile.bundles 列表靠后），
+#     补丁按序合成、同行 id 后写胜出。
+#
+# 卸载方式：从 profile 的 dsh.profile.bundles 里移除本包并删除
+# node_modules 里的 link，内置 provider 即自动恢复。
+
+- id: session-title-llm
+  disabled: true
+
+- insert:
+    - id: dsh-rename
+      name: 'dsh-rename'
+      config:
+        # 消息驱动的自动节奏：
+        #   first-prompt = 仅会话第一条消息后生成一次标题（与内置行为一致）
+        #   all-prompts  = 每条用户消息后都重新总结并重命名
+        # compact 前的重命名由 renameBeforeCompact 单独开关，不受此项影响。
+        automatic: first-prompt
+        # compact（手动 /compact 与自动压缩）开始时重新总结并重命名；false 关闭。
+        renameBeforeCompact: true
+        # 标题长度目标：非 CJK 词数 / CJK 字数。
+        targetWords: 6
+        targetCjkCharacters: 14
+        # 喂给模型的对话摘录预算（UTF-8 字节），超出时保留头尾、省略中段。
+        maxInputBytes: 24000
+        maxOutputTokens: 512
+        # 端到端超时。
+        timeoutMs: 60000
+        # 摘录最多保留的回合数；单回合文本截断（码点）；是否附带工具名。
+        maxTurns: 40
+        maxCharsPerTurn: 260
+        showToolNames: true
+        # 如需固定用某个模型起标题（默认跟随会话当前主模型），取消注释：
+        # provider: pipo-devllm
+        # model: GLM-5.3-Flash

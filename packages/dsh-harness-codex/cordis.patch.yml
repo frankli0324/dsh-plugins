@@ -1,0 +1,13 @@
+# Codex LLM adapter: drives codex via the shared app-server control socket
+# (WebSocket-over-UDS, one JSON message per frame). Spawned as
+# `<command> app-server --listen unix://<socket>` with -c parameters that
+# define a custom provider pointing at dsh's gateway relay. No wrapper
+# contract — a plain `codex` binary works.
+# Switch to it by setting agent-default-model to provider: codex.
+- insert:
+    - id: harness-codex
+      name: 'dsh-harness-codex'
+      config:
+        command: codex
+        sandbox: danger-full-access
+        approvalPolicy: never

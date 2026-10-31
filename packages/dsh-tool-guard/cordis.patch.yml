@@ -1,0 +1,4 @@
+# Static interception bundle: registers one ctx.tools.guard in every agent.
+- insert:
+    - id: tool-guard
+      name: dsh-tool-guard

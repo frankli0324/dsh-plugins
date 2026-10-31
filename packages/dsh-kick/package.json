@@ -1,0 +1,46 @@
+{
+  "name": "dsh-kick",
+  "version": "0.1.0",
+  "description": "DSH plugin: Kick — 与 steer 平行的打断投递；下一条人工消息发出时打断当前回合并立即处理（cancel+steer 封装）",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/client.js",
+    "cordis.patch.yml"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime"
+      ],
+      "immediately": true
+    }
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@deepseek-ai/schemastery": "~3.18.4"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "kick",
+    "steer",
+    "interrupt"
+  ],
+  "scripts": {
+    "test": "node --test test/"
+  }
+}

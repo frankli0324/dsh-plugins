@@ -1,0 +1,21 @@
+{
+  "name": "dsh-tool-guard",
+  "description": "DSH 静态工具拦截：拒绝单次 sleep 超过 10 秒的 bash 命令",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "cordis.patch.yml"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

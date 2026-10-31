@@ -1,0 +1,26 @@
+{
+  "name": "dsh-harness-suite",
+  "version": "0.1.2",
+  "description": "Composite DSH harness suite: shared relay, Codex and Claude adapters, switch UI",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "cordis.patch.yml"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "dependencies": {
+    "dsh-harness-switch": "0.2.0",
+    "dsh-harness-base": "0.2.0",
+    "dsh-harness-claude": "0.3.1",
+    "dsh-harness-codex": "0.2.2"
+  }
+}

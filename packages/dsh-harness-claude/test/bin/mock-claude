@@ -1,0 +1,162 @@
+#!/usr/bin/env node
+// Mock `claude` CLI for the dsh-harness-claude offline tests. Speaks the
+// stream-json protocol (archive/v0.2.1/vendor/claude-stream-json/README.md):
+// reads stdin lines, answers with init/stream events/assistant/user/result
+// frames per the DSH_MOCK_CLAUDE_SCENARIO, and records every spawn
+// (argv/env/cwd) plus every stdin line to DSH_MOCK_CLAUDE_LOG as JSONL.
+//
+// Scenarios:
+//   direct      every user message gets a text answer (default)
+//   tool        first user message gets a tool round (Bash → tool_result)
+//               followed by the final text answer, all in one CLI turn
+//   abort       first user message: init only; the interrupt control request
+//               settles the turn as aborted_streaming; later messages answer
+//   die-later   like direct, but the process exits after the first result
+//   resume-fail with --resume: exit before any output (broken transcript)
+import fs from "node:fs";
+
+const scenario = process.env.DSH_MOCK_CLAUDE_SCENARIO ?? "direct";
+const logPath = () => process.env.DSH_MOCK_CLAUDE_LOG ?? "/tmp/mock-claude.log";
+
+const argv = process.argv.slice(2);
+const flag = (name) => {
+  const at = argv.indexOf(name);
+  return at >= 0 ? argv[at + 1] : undefined;
+};
+const has = (name) => argv.includes(name);
+
+// One JSONL line per spawn: argv, the relay env the adapter injected, cwd.
+fs.appendFileSync(logPath(), JSON.stringify({
+  spawn: true,
+  argv,
+  env: {
+    ANTHROPIC_BASE_URL: process.env.ANTHROPIC_BASE_URL,
+    ANTHROPIC_AUTH_TOKEN: process.env.ANTHROPIC_AUTH_TOKEN,
+    CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC,
+    CLAUDE_CONFIG_DIR: process.env.CLAUDE_CONFIG_DIR,
+  },
+  cwd: process.cwd(),
+}) + "\n");
+
+const resumeId = flag("--resume");
+if (scenario === "resume-fail" && resumeId) {
+  process.exit(1);
+}
+
+const sessionId = resumeId ?? "mock-session-1";
+let userTurns = 0;
+let messageSeq = 0;
+
+const send = (payload) => process.stdout.write(JSON.stringify(payload) + "\n");
+
+const sendInit = () => send({
+  type: "system",
+  subtype: "init",
+  session_id: sessionId,
+  tools: ["Bash"],
+  model: flag("--model") ?? "mock-model",
+  permissionMode: flag("--permission-mode") ?? "default",
+  claude_code_version: "mock",
+});
+
+const sendTextTurn = (text, { usage } = {}) => {
+  const messageId = `msg_${++messageSeq}`;
+  send({ type: "stream_event", event: { type: "message_start", message: { id: messageId } }, session_id: sessionId, parent_tool_use_id: null });
+  send({ type: "stream_event", event: { type: "content_block_start", index: 0, content_block: { type: "text" } }, session_id: sessionId, parent_tool_use_id: null });
+  send({ type: "stream_event", event: { type: "content_block_delta", index: 0, delta: { type: "text_delta", text } }, session_id: sessionId, parent_tool_use_id: null });
+  send({ type: "stream_event", event: { type: "content_block_stop", index: 0 }, session_id: sessionId, parent_tool_use_id: null });
+  send({ type: "assistant", message: { id: messageId, content: [{ type: "text", text }] } });
+  send({
+    type: "result",
+    subtype: "success",
+    is_error: false,
+    result: text,
+    session_id: sessionId,
+    num_turns: 1,
+    ...(usage ? { usage } : { usage: { input_tokens: 10, output_tokens: 5 } }),
+  });
+};
+
+const sendToolTurn = () => {
+  const messageId = `msg_${++messageSeq}`;
+  send({ type: "stream_event", event: { type: "message_start", message: { id: messageId } }, session_id: sessionId, parent_tool_use_id: null });
+  send({ type: "stream_event", event: { type: "content_block_start", index: 0, content_block: { type: "tool_use", id: "call_1", name: "Bash", input: {} } }, session_id: sessionId, parent_tool_use_id: null });
+  send({ type: "stream_event", event: { type: "content_block_stop", index: 0 }, session_id: sessionId, parent_tool_use_id: null });
+  send({ type: "assistant", message: { id: messageId, content: [{ type: "tool_use", id: "call_1", name: "Bash", input: { command: "ls", description: "列出当前目录" } }] } });
+  send({ type: "user", message: { content: [{ type: "tool_result", tool_use_id: "call_1", content: "file-a\nfile-b", is_error: false }] } });
+  // The CLI keeps running the same conversation: the final answer round
+  // follows in the same turn (the adapter pauses the dsh step at the tool
+  // result and drains the rest in the continuation stream()). The CLI keeps
+  // producing AFTER the tool result — the final round is emitted on a delay
+  // so the first stream() can observe the pause finish while the turn is
+  // still running (an instant full-turn dump would set done before the
+  // first drain and turn the continuation into a fresh turn).
+  setTimeout(() => {
+    const textId = `msg_${++messageSeq}`;
+    send({ type: "stream_event", event: { type: "message_start", message: { id: textId } }, session_id: sessionId, parent_tool_use_id: null });
+    send({ type: "stream_event", event: { type: "content_block_start", index: 0, content_block: { type: "text" } }, session_id: sessionId, parent_tool_use_id: null });
+    send({ type: "stream_event", event: { type: "content_block_delta", index: 0, delta: { type: "text_delta", text: "final answer" } }, session_id: sessionId, parent_tool_use_id: null });
+    send({ type: "stream_event", event: { type: "content_block_stop", index: 0 }, session_id: sessionId, parent_tool_use_id: null });
+    send({ type: "assistant", message: { id: textId, content: [{ type: "text", text: "final answer" }] } });
+    send({
+      type: "result",
+      subtype: "success",
+      is_error: false,
+      result: "final answer",
+      session_id: sessionId,
+      num_turns: 2,
+      usage: { input_tokens: 20, output_tokens: 8 },
+    });
+  }, 300);
+};
+
+const sendAbortedTurn = () => {
+  send({ type: "user", message: { content: [{ type: "text", text: "[Request interrupted by user]" }] } });
+  send({
+    type: "result",
+    subtype: "success",
+    is_error: false,
+    result: "",
+    session_id: sessionId,
+    terminal_reason: "aborted_streaming",
+    usage: { input_tokens: 3, output_tokens: 1 },
+  });
+};
+
+const onStdinLine = (line) => {
+  fs.appendFileSync(logPath(), JSON.stringify({ stdin: line }) + "\n");
+  let msg;
+  try { msg = JSON.parse(line); } catch { return; }
+  if (msg.type === "control_request") {
+    if (scenario === "abort" && msg.request?.subtype === "interrupt") {
+      sendAbortedTurn();
+    }
+    return;
+  }
+  if (msg.type !== "user") return;
+  userTurns++;
+  if (userTurns === 1) sendInit();
+  if (scenario === "tool" && userTurns === 1) {
+    sendToolTurn();
+  } else if (scenario === "abort" && userTurns === 1) {
+    // init was sent; hold until the interrupt arrives.
+  } else {
+    sendTextTurn(`answer ${userTurns}`);
+  }
+  if (scenario === "die-later" && userTurns >= 1) {
+    // Let the stdout flush before dying.
+    setTimeout(() => process.exit(0), 20);
+  }
+};
+
+let buffer = "";
+process.stdin.on("data", (chunk) => {
+  buffer += chunk.toString();
+  let idx;
+  while ((idx = buffer.indexOf("\n")) >= 0) {
+    const line = buffer.slice(0, idx).trim();
+    buffer = buffer.slice(idx + 1);
+    if (line) onStdinLine(line);
+  }
+});
+process.stdin.on("end", () => process.exit(0));

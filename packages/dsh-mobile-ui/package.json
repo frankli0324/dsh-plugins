@@ -1,0 +1,29 @@
+{
+  "name": "dsh-mobile-ui",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DSH 移动端布局插件；只包含布局，不包含连接或远程访问逻辑。",
+  "type": "module",
+  "main": "./lib/index.mjs",
+  "exports": {
+    ".": "./lib/index.mjs",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/client.js",
+    "lib/index.mjs",
+    "lib/apple-touch-icon.png",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true
+    }
+  }
+}
